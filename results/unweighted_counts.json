@@ -12,7 +12,9 @@
     },
     "rd_unweighted": -0.05624324769735037,
     "rr_unweighted": 0.6090747104492809,
-    "logrank_p": 0.0001706703684672224
+    "logrank_p": 0.0001706703684672224,
+    "sofa_median": 2.0,
+    "n_sofa_ge_median": 1185
   },
   "eicu": {
     "early": {

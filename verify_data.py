@@ -26,6 +26,11 @@ def docx_text(path):
     return "\n".join(parts)
 
 
+def norm(t):
+    """Fold every minus-like glyph to ASCII '-' so probes match either style."""
+    return t.translate({0x2212: "-", 0x2013: "-", 0x2014: "-"}).replace("\u2212", "-")
+
+
 def pp(x):
     return f"{x*100:.1f}"
 
@@ -58,6 +63,7 @@ CHECKS = [
 def audit(path):
     print(f"\n=== auditing {path.name} ===")
     txt = docx_text(path)
+    ntxt = norm(txt)
     fails = []
     # 1) JSON-derived values match hard-locked constants
     for label, derived, locked in CHECKS:
@@ -66,12 +72,21 @@ def audit(path):
     # 2) key strings present in manuscript text
     for label, derived, _ in CHECKS:
         probe = derived.lstrip("+")
-        if probe not in txt and derived not in txt:
+        if norm(probe) not in ntxt and norm(derived) not in ntxt:
             fails.append(f"MISSING IN TEXT {label}: {derived!r} not found")
     # 3) stale-value sentinels that must NOT appear
-    for bad in ["13.9%", "319 eligible", "432 analysable", "+0.1 pp", "all-cause mortality"]:
-        if bad in txt:
+    for bad in ["13.9%", "319 eligible", "432 analysable", "+0.1 pp", "all-cause mortality",
+                "71/776", "154/1,126", "72 / 776", "our institution"]:
+        if bad in norm(txt):
             fails.append(f"STALE/BANNED STRING present: {bad!r}")
+    # crude (unweighted) counts must be the ones computed from the parquet
+    UW = json.load(open(RES / "unweighted_counts.json"))
+    for arm in ("early", "deferred"):
+        frag = f"{UW['mimic'][arm]['events']}/{UW['mimic'][arm]['n']:,}"
+        if frag not in norm(txt):
+            fails.append(f"crude count missing: {frag!r}")
+    if "Artificial intelligence" in txt and "Use of artificial intelligence: during" in txt:
+        fails.append("AI statement still sits in the Methods body")
     # 4) AIC structural checks (only for AIC file)
     if "AIC" in path.name:
         if "Take-home message" in txt:
@@ -82,9 +97,18 @@ def audit(path):
                     "Consent for publication", "Availability of data and materials",
                     "Competing interests", "Funding", "Authors' contributions",
                     "Acknowledgements", "List of abbreviations", "Conclusions",
-                    "Background", "Keywords"]:
+                    "Background", "Keywords", "Trial registration"]:
             if req not in txt:
                 fails.append(f"AIC required section missing: {req!r}")
+        if "Declaration of generative AI" not in txt:
+            fails.append("AIC AI-in-writing declaration missing")
+        if "github.com/ccmzhangrui/ventilator-deescalation-target-trial-emulation" not in txt:
+            fails.append("analysis-code repository URL missing")
+        # BMC house style: figures/tables must follow the references
+        i_ref = txt.find("References")
+        i_fig = txt.find("Figure 1.  Study flow diagram")
+        if i_ref > 0 and 0 < i_fig < i_ref:
+            fails.append("Figures appear before References (BMC order violated)")
         for ds in ["10.13026/6mm1-ek67", "10.13026/C2WM1R"]:
             if ds not in txt:
                 fails.append(f"dataset DOI missing: {ds}")

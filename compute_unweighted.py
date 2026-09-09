@@ -52,6 +52,9 @@ def main():
             lr = logrank_test(e["surv_time"].values, f["surv_time"].values,
                               e["event"].values, f["event"].values)
             res["mimic"]["logrank_p"] = float(lr.p_value)
+        if "sofa_total" in d.columns:
+            res["mimic"]["sofa_median"] = float(d["sofa_total"].median())
+            res["mimic"]["n_sofa_ge_median"] = int((d["sofa_total"] >= d["sofa_total"].median()).sum())
     p_eicu = RES / "eicu_analyzable.parquet"
     if p_eicu.exists():
         d = pd.read_parquet(p_eicu)

@@ -10,7 +10,7 @@ Generates:
 All numbers read from analysis_summary.json and CSVs in results/.
 All numbers used in manuscript and PPT are IDENTICAL.
 """
-import json, os
+import json, os, re
 from pathlib import Path
 import pandas as pd
 from docx import Document
@@ -41,11 +41,12 @@ TG = A["threshold_grid"]
 # Threshold-grid RD ranges derived from pipeline JSON (no hardcoded effect sizes)
 _TGA = [c["rd"] for c in TG]                                   # all 9 cells (fractions)
 _TGS = [c["rd"] for c in TG if c["fio2_threshold"] > 40]      # FiO2 <=50/60 subset (6 cells)
-TG_RANGE_ALL = f"\u2212{abs(max(_TGA))*100:.1f} to \u2212{abs(min(_TGA))*100:.1f}"
-TG_RANGE_SUB = f"\u2212{abs(max(_TGS))*100:.1f} to \u2212{abs(min(_TGS))*100:.1f}"
-TG_TILDE_ALL = f"\u2212{abs(max(_TGA))*100:.1f} ~ \u2212{abs(min(_TGA))*100:.1f}"
-TG_TILDE_ALL_ASCII = f"-{abs(max(_TGA))*100:.1f} ~ -{abs(min(_TGA))*100:.1f}"
-TG_MAX_BENEFIT = f"\u2212{abs(min(_TGA))*100:.1f}"
+_UM = "\u2212"  # unicode minus for signed effect sizes
+TG_RANGE_ALL = f"{_UM}{abs(min(_TGA))*100:.1f} to {_UM}{abs(max(_TGA))*100:.1f}"
+TG_RANGE_SUB = f"{_UM}{abs(min(_TGS))*100:.1f} to {_UM}{abs(max(_TGS))*100:.1f}"
+TG_TILDE_ALL = f"{_UM}{abs(min(_TGA))*100:.1f} ~ {_UM}{abs(max(_TGA))*100:.1f}"
+TG_TILDE_ALL_ASCII = f"-{abs(min(_TGA))*100:.1f} ~ -{abs(max(_TGA))*100:.1f}"
+TG_MAX_BENEFIT = f"{_UM}{abs(min(_TGA))*100:.1f}"
 
 # Crude (unweighted) observed event counts, computed from the production
 # analysable datasets by compute_unweighted.py (NOT back-derived from the
@@ -92,7 +93,11 @@ if EV_OK:
 def pp(x): return f"{x*100:.1f}"  # to percentage string (1 decimal)
 def ci_pp(lo, hi, fmt="{:.1f}"): return f"{fmt.format(lo*100)} to {fmt.format(hi*100)}"
 def pp_label(x): return f"{x*100:+.1f}"  # signed pp
-def pp_label_u(x): return pp_label(x).replace("-", "\u2212")  # signed pp, unicode minus (slides)
+def p_fmt(p): return "p < 0.001" if p < 0.001 else f"p = {p:.3f}"
+_LR_P = UW_M["logrank_p"] if UW_OK and "logrank_p" in UW_M else None
+_LR_TXT = p_fmt(_LR_P) if _LR_P is not None else "p < 0.001"
+_SOFA_MED = UW_M.get("sofa_median") if UW_OK else None
+_sofa_med = _SOFA_MED if _SOFA_MED is not None else 2.0
 
 # ───────────────────────────────────────────────────────────────────────
 #  DOCX helpers
@@ -265,11 +270,42 @@ def _polish_headings(doc):
                 p.paragraph_format.space_before = Pt(10)
 
 
+_MINUS_RE = re.compile(r"(?<![A-Za-z0-9])[\-\u2013](?=\d)")
+
+
+def _normalise_minus(doc):
+    """Render every minus sign as U+2212 (true minus) for typographic consistency.
+
+    Only a dash that *starts a numeric token* is converted: it must be preceded
+    by a non-alphanumeric character and followed by a digit. Hyphens inside
+    words (L2-penalised), compound adjectives (28-day, Day-2), en-dash ranges
+    (1st-99th, 2014-2015, SA1-SA3) and reference page ranges are left as typed.
+    """
+    n = 0
+    def _fix(par):
+        nonlocal n
+        for run in par.runs:
+            if run.text and _MINUS_RE.search(run.text):
+                new = _MINUS_RE.sub("\u2212", run.text)
+                if new != run.text:
+                    n += 1
+                    run.text = new
+    for par in doc.paragraphs:
+        _fix(par)
+    for tbl in doc.tables:
+        for row in tbl.rows:
+            for cell in row.cells:
+                for par in cell.paragraphs:
+                    _fix(par)
+    return n
+
+
 def polish_doc(doc, page_numbers=True, running_head=None):
     if page_numbers:
         _add_page_numbers(doc, running_head=running_head)
     _polish_tables(doc)
     _polish_headings(doc)
+    _normalise_minus(doc)
     return doc
 
 
@@ -490,8 +526,7 @@ def build_main():
         "chart-event coverage to derive Day-2 mode classification and FiO\u2082/PEEP. "
         "This pre-extraction is a data-provenance constraint of our approved access "
         "rather than an additional eligibility criterion, and it is reported so that the "
-        "denominator can be traced to the published database; it is "
-        "handled identically in both databases. The full target trial protocol (eligibility, treatment "
+        "denominator can be traced to the published database. The full target trial protocol (eligibility, treatment "
         "strategies, outcomes, follow-up, and analysis plan) was specified before the "
         "analytic dataset was finalised, with no protocol amendments thereafter. The "
         "protocol is provided in the Supplement. The three temporal anchors of the "
@@ -628,8 +663,9 @@ def build_main():
 
     P_(doc,
         "Risk differences (RD) and risk ratios (RR) were estimated from weighted mortality "
-        "proportions. 28-day RMST was estimated from the weighted mean survival time up to "
-        "28 days (13). Ninety-five per cent confidence intervals were constructed using "
+        "proportions. 28-day RMST was estimated as the area under the weighted survival "
+        "curve truncated at 28 days, that is, the weighted mean survival time up to "
+        "28 days (13, 21). Ninety-five per cent confidence intervals were constructed using "
         "patient-level bootstrap resampling, with 2,000 replicates for the primary analysis "
         "and 800 replicates for sensitivity and exploratory analyses; in each bootstrap "
         "iteration the propensity model was refit and weights were re-truncated (14, 15).",
@@ -712,7 +748,8 @@ def build_main():
 
     H(doc, "Study population", level=2)
     P_(doc,
-        f"Of {F['total_records']:,} adult ICU records in MIMIC-IV, {F['ventilated']:,} "
+        f"Of {F['total_records']:,} adult ICU records in MIMIC-IV (one record per ICU "
+        f"stay), {F['ventilated']:,} "
         f"patients received invasive mechanical ventilation, of whom {F['vent_gt_24h']:,} "
         f"were ventilated for more than 24 hours, of whom {F['alive_at_48h']:,} were alive "
         f"and still ventilated at the 48-hour landmark, of whom "
@@ -758,9 +795,9 @@ def build_main():
     H(doc, "Weight diagnostics", level=2)
     P_(doc,
         f"The mean stabilised weight was {W['weight_mean']:.2f} (SD "
-        f"{W['weight_sd']:.2f}); the post-truncation range was "
-        f"{W['weight_min']:.2f}\u2013{W['weight_max']:.2f} (1st and 99th percentile cutoffs: "
-        f"{W['trunc_lo']:.2f} and {W['trunc_hi']:.2f}). The propensity score ranged from "
+        f"{W['weight_sd']:.2f}); after truncation at the 1st and 99th percentiles "
+        f"({W['trunc_lo']:.2f} and {W['trunc_hi']:.2f}), weights ranged from "
+        f"{W['weight_min']:.2f} to {W['weight_max']:.2f}. The propensity score ranged from "
         f"{W['ps_min']:.3f} to {W['ps_max']:.3f} (mean {W['ps_mean']:.3f}), with no "
         f"evidence of complete separation. The distribution of weights and the change in "
         f"covariate balance after weighting are shown in Figure S1.", align="justify")
@@ -785,7 +822,7 @@ def build_main():
         f"difference of {pp_label(P['rd'])} percentage points (95% CI "
         f"{ci_pp(P['rd_ci_lo'], P['rd_ci_hi'])}) and the risk ratio was "
         f"{P['rr']:.2f} (95% CI {P['rr_ci_lo']:.2f}\u2013{P['rr_ci_hi']:.2f}); both "
-        f"excluded the null. The unweighted log-rank test yielded p < 0.001. Figure 2 "
+        f"excluded the null. The unweighted log-rank test yielded {_LR_TXT}. Figure 2 "
         f"shows the weighted Kaplan\u2013Meier survival curves with the N-at-risk table.",
         align="justify")
 
@@ -851,9 +888,12 @@ def build_main():
             f"patients on assisted modes at the landmark, patients aged \u226565 years and "
             f"patients with Sepsis-3; the ARDS subgroup was too small for estimation "
             f"(n = {S['early'] + S['deferred'] - int(SUBG.loc[SUBG['subgroup'] == 'No ARDS', 'n'].iloc[0])}). "
-            f"In this cohort the Sepsis-3 flag coincided exactly with a total "
-            f"SOFA score \u22652 (the cohort median), so these two subgroup definitions "
-            f"identify the same patients.", align="justify")
+            f"In this cohort the Sepsis-3 flag was present in exactly the "
+            f"{int(SUBG.loc[SUBG['subgroup'].str.startswith('SOFA'), 'n'].iloc[0]):,} patients with a total "
+            f"SOFA score at or above the cohort median of "
+            f"{_sofa_med:.0f}, so the Sepsis-3 and SOFA-split subgroup definitions "
+            f"identify the same patients; only the Sepsis-3 split is therefore reported "
+            f"in Figure S3.", align="justify")
 
     H(doc, "Exploratory threshold grid", level=2)
     P_(doc,
@@ -997,10 +1037,9 @@ def build_main():
         "unmeasured-confounding robustness via the E-value, "
         "the use of bootstrap resampling that refits the propensity "
         "model at each iteration, the demonstration of adequate covariate balance after "
-        "weighting (all standardised mean differences < 0.10), and a sample of "
-        f"{S['early']+S['deferred']:,} analysable patients \u2014 more than fourfold larger "
-        "than typical single-database CCW weaning analyses. Finally, the pre-specified "
-        "external validation in an independent multi-centre database "
+        f"weighting (all standardised mean differences < 0.10), and {S['early']+S['deferred']:,} "
+        f"analysable patients in the derivation cohort. Finally, the pre-specified "
+        f"external validation in an independent multi-centre database "
         f"(eICU-CRD; {EV['n_analyzable']:,} analysable patients, 208 hospitals) confirmed "
         "the direction and significance of the association, which is uncommon in "
         "observational weaning research.", align="justify")
@@ -1032,18 +1071,16 @@ def build_main():
 
     P_(doc,
         "In conclusion, in this target trial emulation of {n} patients still invasively "
-        "ventilated 48 hours after initiation with low oxygenation-support thresholds, early "
-        "de-escalation of ventilatory support within the subsequent 24 hours was associated "
-        "with lower 28-day mortality (RD {rd} pp; RR {rr:.2f}), longer ventilator-free days and "
-        "greater restricted mean survival time, with consistent results across pre-specified "
-        "sensitivity analyses, benefit apparent across the exploratory FiO\u2082\u2013PEEP "
-        "threshold grid, and external validation in an independent multi-centre cohort. "
-        "These findings support a prospective, randomised evaluation of "
-        "early de-escalation strategies in this population. Any such trial "
-        "should incorporate pre-specified sequential monitoring for early "
-        "benefit or harm, recognising that stopping at the right time, for "
-        "the right reasons, contributes as much to medical knowledge as trial "
-        "completion (20).".format(
+        "ventilated 48 hours after ICU admission with low oxygenation-support thresholds, "
+        "early de-escalation of ventilatory support within the subsequent 24 hours was "
+        "associated with lower 28-day mortality (RD {rd} pp; RR {rr:.2f}), longer "
+        "ventilator-free days and greater restricted mean survival time, with consistent "
+        "results across pre-specified sensitivity analyses, benefit apparent across the "
+        "exploratory FiO\u2082\u2013PEEP threshold grid, and external validation in an "
+        "independent multi-centre cohort. These findings support a prospective, "
+        "randomised evaluation of early de-escalation strategies in this population; "
+        "any such trial should incorporate pre-specified sequential monitoring for "
+        "early benefit or harm (20).".format(
             n=f"{S['early']+S['deferred']:,}", rd=pp_label(P['rd']), rr=P['rr']), align="justify")
 
     # ── Figures ──
@@ -1075,7 +1112,7 @@ def build_main():
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.add_run().add_picture(str(FIG_DIR / "Figure2_Survival.png"), width=Cm(15))
     P_(doc, f"Weighted Kaplan\u2013Meier survival curves with stabilised IPCW truncated at "
-            f"the 1st\u201399th percentile. The unweighted log-rank p-value was <0.001. "
+            f"the 1st\u201399th percentile. The unweighted log-rank test yielded {_LR_TXT}. "
             f"At day 28, weighted mortality was {pp(P['mort_early'])}% in the early "
             f"de-escalation arm versus {pp(P['mort_deferred'])}% in the deferred arm; the "
             f"weighted risk difference was {pp_label(P['rd'])} percentage points (95% "
@@ -1409,8 +1446,11 @@ def build_main():
         "16. Levine S, Nguyen T, Taylor N, et al. Rapid disuse atrophy of diaphragm fibers in mechanically ventilated humans. N Engl J Med. 2008;358(13):1327-1335.",
         "17. Pollard TJ, Johnson AEW, Raffa JD, Celi LA, Mark RG, Badawi O. The eICU Collaborative Research Database, a freely available multi-centre database for critical care research. Sci Data. 2018;5:180178.",
         "18. Cashin AG, Hansford HJ, Hern\u00e1n MA, et al. Transparent reporting of observational studies emulating a target trial\u2014the TARGET statement. JAMA. 2025;334(12):1084-1093.",
-        "19. Gilding AJ, Longo C. A primer on target trial emulation for respiratory research. Eur Respir J. 2026; in press. doi:10.1183/13993003.01143-2026.",
+        "19. Gilding AJ, Longo C. A primer on target trial emulation for respiratory research. Eur Respir J. 2026;2601143. doi:10.1183/13993003.01143-2026.",
         "20. Huang AJ, Lewis RJ. Trials terminated early\u2014when is enough, enough? JAMA. 2026;336(9):742-744.",
+        "21. Royston P, Parmar MKB. Restricted mean survival time: an alternative to "
+        "the hazard ratio for the design and analysis of randomized trials with a "
+        "time-to-event outcome. BMC Med Res Methodol. 2013;13:152.",
     ]
     for i, ref in enumerate(refs, 1):
         P_(doc, ref, size=10, align="justify")

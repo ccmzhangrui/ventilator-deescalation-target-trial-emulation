@@ -47,10 +47,12 @@ TITLE = ("Early versus deferred de-escalation from controlled ventilation after 
          "a 48-hour landmark of physiological stability: a target trial emulation "
          "in MIMIC-IV with external validation in eICU-CRD")
 
+ABSTRACT_WORDS = 0  # set by front_aic(); reused by cover_letter_aic()
+
 DATASET_REFS = [
-    "21. Johnson A, Bulgarelli L, Pollard T, Horng S, Celi LA, Mark R. MIMIC-IV "
+    "22. Johnson A, Bulgarelli L, Pollard T, Horng S, Celi LA, Mark R. MIMIC-IV "
     "(version 2.2). PhysioNet. 2023. https://doi.org/10.13026/6mm1-ek67.",
-    "22. Pollard T, Johnson A, Raffa J, Celi LA, Badawi O, Mark R. eICU "
+    "23. Pollard T, Johnson A, Raffa J, Celi LA, Badawi O, Mark R. eICU "
     "Collaborative Research Database (version 2.0). PhysioNet. 2019. "
     "https://doi.org/10.13026/C2WM1R.",
 ]
@@ -192,6 +194,7 @@ def front_aic(doc):
     total = wc(bg) + wc(res) + wc(con) + 3  # +3 section labels
     print(f"  AIC abstract words: {total} (limit 350)")
     assert total <= 350, f"Abstract too long: {total}"
+    globals()["ABSTRACT_WORDS"] = total
 
     PR(doc, [("Background.  ", True, False), (bg, False, False)])
     PR(doc, [("Results.  ", True, False), (res, False, False)])
@@ -218,12 +221,24 @@ def declarations_aic(doc):
     PR(doc, [("Availability of data and materials.  ", True, False),
         ("The datasets analysed during the current study are available through "
          "PhysioNet after completion of the required training and data-use "
-         "agreements: MIMIC-IV version 2.2 (21) and the eICU Collaborative "
-         "Research Database version 2.0 (22). The complete, reproducible analysis "
+         "agreements: MIMIC-IV version 2.2 (22) and the eICU Collaborative "
+         "Research Database version 2.0 (23). The complete, reproducible analysis "
          "code (Python 3.13), including the extraction pipelines, the "
          "clone\u2013censor\u2013weight estimator, all sensitivity and robustness "
-         "analyses, and figure generation, is publicly available at "
-         "https://github.com/ccmzhangrui/ventilator-deescalation-target-trial-emulation.",
+         "analyses, and figure generation, is openly available at "
+         "https://github.com/ccmzhangrui/ventilator-deescalation-target-trial-emulation "
+         "(MIT licence). Row-level intermediate files derived from the "
+         "credentialed databases are not redistributed; only aggregate outputs "
+         "(results/) are published.", False, False)])
+    PR(doc, [("Declaration of generative AI and AI-assisted technologies in the "
+              "writing process.  ", True, False),
+        ("During the preparation of this work the authors used a large "
+         "language model\u2013based assistant to support verification of the "
+         "analysis code and English-language editing. No content was generated "
+         "de novo: every numerical result reported in this manuscript is "
+         "reproduced from the locked analysis outputs in the accompanying "
+         "repository, and every sentence was reviewed and edited by the authors, "
+         "who take full responsibility for the content of the published article.",
          False, False)])
     PR(doc, [("Competing interests.  ", True, False),
         ("The authors declare that they have no competing interests.", False, False)])
@@ -264,17 +279,9 @@ def transform_to_aic(icm_path):
     # 3) insert AIC front before Background heading
     move_before(doc, intro_el, front_aic)
 
-    # 4) LLM statement before "Results" H1 (end of Methods)
-    results_el = next(el for el in body.iterchildren() if is_heading(el, "Results"))
-    def llm(d):
-        P_(d, "Use of artificial intelligence: during the preparation of this "
-              "work, the authors used a large language model\u2013based coding "
-              "and language assistant to support analysis-code verification and "
-              "English language editing. All outputs were reviewed, verified "
-              "against the locked analysis outputs, and edited by the authors, "
-              "who take full responsibility for the integrity and content of "
-              "the manuscript.", align="justify")
-    move_before(doc, results_el, llm)
+    # 4) (removed) an AI-use statement was previously injected at the end of Methods;
+    #    it now belongs in the Declarations section (see declarations_aic) per
+    #    Springer Nature / BMC policy.
 
     # 5) standalone Conclusions heading before "In conclusion," paragraph
     concl_el = None
@@ -306,6 +313,34 @@ def transform_to_aic(icm_path):
     for ref in DATASET_REFS:
         P_(doc, ref, size=10, align="justify")
 
+    # 8b) BMC house style: figure legends and tables come AFTER the references.
+    #     Move the [Figures H1, List of abbreviations H1) block to the end of the
+    #     body, keeping w:sectPr as the final element.
+    figs_el = None
+    for el in body.iterchildren():
+        if is_heading(el, "Figures"):
+            figs_el = el
+            break
+    if figs_el is not None:
+        abbr_el2 = next(el for el in body.iterchildren()
+                        if is_heading(el, "List of abbreviations"))
+        block, inside = [], False
+        for el in list(body.iterchildren()):
+            if el is figs_el:
+                inside = True
+            if el is abbr_el2:
+                break
+            if inside and el.tag != qn("w:sectPr"):
+                block.append(el)
+        sectPr = body.find(qn("w:sectPr"))
+        for el in block:
+            body.remove(el)
+            if sectPr is not None:
+                sectPr.addprevious(el)
+            else:
+                body.append(el)
+        print(f"  ✓ Moved {len(block)} figure/table blocks after References")
+
     # 9) remove all explicit page breaks
     for br in list(body.iter(qn("w:br"))):
         if br.get(qn("w:type")) == "page":
@@ -321,6 +356,8 @@ def transform_to_aic(icm_path):
         ln.set(qn("w:distance"), "240")
         ln.set(qn("w:restart"), "newPage")
         sectPr.append(ln)
+
+    bf._normalise_minus(doc)
 
     out = BASE / "TTE_Deescalation_Manuscript_AIC.docx"
     doc.save(str(out))
@@ -349,7 +386,7 @@ def cover_letter_aic():
         f"intensive care medicine. Using a target trial emulation framework "
         f"with clone\u2013censor\u2013weight estimation, we compared early "
         f"versus deferred de-escalation strategies in {F['eligible']:,} adults "
-        f"still invasively ventilated 48 hours after initiation with "
+        f"still invasively ventilated 48 hours after ICU admission with "
         f"FiO\u2082 \u226450% and PEEP \u226410 cmH\u2082O. Our primary analysis "
         f"in {S['early'] + S['deferred']:,} analysable patients showed that "
         f"early de-escalation was associated with lower 28-day mortality "
@@ -381,6 +418,23 @@ def cover_letter_aic():
         "have approved the submitted version and agree to be accountable for "
         "its content. The authors declare no competing interests. No specific "
         "funding was received for this study.", align="justify")
+    P_(doc,
+        "In accordance with the journal's instructions, the manuscript is "
+        "double-spaced with continuous line numbering and is organised as "
+        "Background, Methods, Results, Discussion, Conclusions, List of "
+        "abbreviations, Declarations, References, figure legends and tables. "
+        f"The abstract contains {ABSTRACT_WORDS} words (structured "
+        "Background/Methods/Results/Conclusions; limit 350). Reporting follows "
+        "STROBE and the TARGET statement; both completed checklists, the full "
+        "target-trial protocol, the component-by-component emulation mapping, "
+        "the operational definitions used in each database, the covariate "
+        "missingness table and the complete set of supplementary tables "
+        "(S1\u2013S10) and figures (S1\u2013S6) are provided in a single "
+        "supplementary appendix. The complete analysis code is openly "
+        "available at https://github.com/ccmzhangrui/"
+        "ventilator-deescalation-target-trial-emulation; the two source "
+        "databases (MIMIC-IV v2.2 and eICU-CRD v2.0) are accessible through "
+        "PhysioNet under the required data-use agreements.", align="justify")
     doc.add_paragraph()
     P_(doc, "Thank you for your consideration.", align="left")
     doc.add_paragraph()
