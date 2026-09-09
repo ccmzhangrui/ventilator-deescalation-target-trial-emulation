@@ -148,16 +148,21 @@ def front_aic(doc):
     bg = (
         "The optimal timing of transition from controlled to assisted ventilatory "
         "modes after physiological stabilisation remains uncertain. We estimated "
-        "the causal effect of early versus deferred de-escalation of respiratory "
-        "support on 28-day in-hospital mortality using target trial emulation with "
-        "clone\u2013censor\u2013weight estimation in MIMIC-IV (version 2.2), with "
-        "external validation in the multi-centre eICU Collaborative Research "
-        "Database (version 2.0; 208 hospitals). Adults still invasively ventilated "
-        "48 hours after ICU admission with a classified Day-2 ventilator mode, "
-        "Day-2 FiO\u2082 \u226450% and PEEP \u226410 cmH\u2082O were eligible. "
-        "Early de-escalation (Day-3 support level below Day-2, or extubation "
-        "within 72 hours) was compared with deferred de-escalation over a 24-hour "
-        "grace window using stabilised inverse-probability-of-censoring weights."
+        "the effect of early versus deferred de-escalation of respiratory support "
+        "on 28-day in-hospital mortality."
+    )
+    me = (
+        "We emulated a target trial in MIMIC-IV (version 2.2) and replicated the "
+        "protocol without modification in the multi-centre eICU Collaborative "
+        "Research Database (version 2.0; 208 hospitals). Adults still invasively "
+        "ventilated 48 hours after ICU admission with a classified Day-2 "
+        "ventilator mode, Day-2 FiO\u2082 \u226450% and PEEP \u226410 cmH\u2082O "
+        "were eligible. Early de-escalation (Day-3 support level below Day-2, or "
+        "extubation within 72 hours) was compared with deferred de-escalation "
+        "over a 24-hour grace window using clone\u2013censor\u2013weight "
+        "estimation with stabilised inverse-probability-of-censoring weights. "
+        "The target estimand was the per-protocol effect, expressed as a risk "
+        "difference and a risk ratio with bootstrap confidence intervals."
     )
     res = (
         f"Of {F['total_records']:,} MIMIC-IV records, {F['eligible']:,} adults met "
@@ -187,16 +192,17 @@ def front_aic(doc):
         "restricted mean survival and more ventilator-free days, with consistent "
         "results across all sensitivity analyses and external validation in an "
         "independent multi-centre cohort. Among patients on low respiratory "
-        "support at 48 hours, timely step-down of support should be actively "
-        "pursued; residual confounding by unmeasured clinical acuity cannot be "
-        "excluded and prospective validation is warranted."
+        "support at 48 hours, these data support actively pursuing timely "
+        "step-down, while randomised confirmation is warranted and residual "
+        "confounding by unmeasured clinical acuity cannot be excluded."
     )
-    total = wc(bg) + wc(res) + wc(con) + 3  # +3 section labels
+    total = wc(bg) + wc(me) + wc(res) + wc(con) + 4  # +4 section labels
     print(f"  AIC abstract words: {total} (limit 350)")
     assert total <= 350, f"Abstract too long: {total}"
     globals()["ABSTRACT_WORDS"] = total
 
     PR(doc, [("Background.  ", True, False), (bg, False, False)])
+    PR(doc, [("Methods.  ", True, False), (me, False, False)])
     PR(doc, [("Results.  ", True, False), (res, False, False)])
     PR(doc, [("Conclusions.  ", True, False), (con, False, False)])
     doc.add_paragraph()
