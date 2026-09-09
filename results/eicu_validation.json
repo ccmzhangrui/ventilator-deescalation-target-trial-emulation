@@ -1,0 +1,59 @@
+{
+  "database": "eICU-CRD v2.0",
+  "design": "external validation, in-hospital mortality",
+  "flow": {
+    "first_stay_adults": 157883,
+    "with_vent_settings": 69679,
+    "vent_gt_24h": 40712,
+    "alive_at_48h": 39870,
+    "has_d2_settings": 17914,
+    "fio2_peep_ok": 14830,
+    "mode_d2_classifiable": 12339,
+    "eligible": 12339
+  },
+  "strategy_counts": {
+    "deferred": 6761,
+    "early": 4196,
+    "unascertainable": 1095,
+    "grace_death": 287
+  },
+  "n_analyzable": 10957,
+  "n_early": 4196,
+  "n_deferred": 6761,
+  "weight_diag": {
+    "p_early": 0.383,
+    "weight_mean": 0.9963,
+    "weight_sd": 0.184,
+    "weight_max": 1.7061
+  },
+  "primary_hospital_mortality": {
+    "mort_early": 0.0919,
+    "mort_deferred": 0.2117,
+    "rd": -0.1198,
+    "rd_ci_lo": -0.1327,
+    "rd_ci_hi": -0.1071,
+    "rr": 0.4341,
+    "rr_ci_lo": 0.3862,
+    "rr_ci_hi": 0.4829
+  },
+  "icu_mortality": {
+    "mort_early": 0.0277,
+    "mort_deferred": 0.1287
+  },
+  "sa_strict_extubation": {
+    "n": 10404,
+    "n_early": 3643,
+    "n_deferred": 6761,
+    "mort_early": 0.0815,
+    "mort_deferred": 0.213,
+    "rd": -0.1315,
+    "rd_ci_lo": -0.1437,
+    "rd_ci_hi": -0.1184,
+    "rr": 0.3826,
+    "rr_ci_lo": 0.3384,
+    "rr_ci_hi": 0.4278
+  },
+  "balance_max_smd_weighted": 0.0503,
+  "n_boot": 2000,
+  "runtime_sec": 261.1
+}

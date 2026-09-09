@@ -1,0 +1,17 @@
+{
+  "SA1_no_truncation": {
+    "rd": -0.0441,
+    "rd_ci_lo": -0.0728,
+    "rd_ci_hi": -0.0126
+  },
+  "SA2_icu_mortality": {
+    "rd": -0.0501,
+    "rd_ci_lo": -0.0796,
+    "rd_ci_hi": -0.0187
+  },
+  "SA3_unweighted": {
+    "rd": -0.0562,
+    "rd_ci_lo": -0.0856,
+    "rd_ci_hi": -0.0286
+  }
+}

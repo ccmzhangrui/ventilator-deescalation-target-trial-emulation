@@ -1,0 +1,10 @@
+step,count
+total_records,51992
+adults,51992
+ventilated,40501
+vent_gt_24h,25895
+alive_at_48h,25280
+has_d2_settings,3603
+fio2_le_50,2417
+peep_le_10,2267
+eligible,2267

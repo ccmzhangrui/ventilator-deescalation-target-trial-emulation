@@ -1,0 +1,18 @@
+{
+  "n_early": 776,
+  "n_deferred": 1126,
+  "n_total": 1902,
+  "p_early_marginal": 0.408,
+  "ps_mean": 0.4074,
+  "ps_min": 0.01,
+  "ps_max": 0.8267,
+  "weight_mean": 0.9947,
+  "weight_sd": 0.235,
+  "weight_min": 0.6329,
+  "weight_p1": 0.6329,
+  "weight_p50": 0.9509,
+  "weight_p99": 1.9154,
+  "weight_max": 1.9154,
+  "trunc_lo": 0.6329,
+  "trunc_hi": 1.9154
+}

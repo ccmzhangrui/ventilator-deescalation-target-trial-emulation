@@ -1,0 +1,20 @@
+Variable,Early (n=776),Deferred (n=1126)
+"Age, years",67.5,66.6
+"Male, n (%)",56.7,57.2
+"Weight, kg",85.9,84.4
+SOFA total,2.1,2.5
+SOFA respiration,0.8,0.8
+SOFA cardiovascular,1.2,1.1
+SOFA CNS,0.4,0.5
+SOFA renal,0.6,0.6
+"Day-2 FiO₂, %",43.6,42.7
+"Day-2 PEEP, cmH₂O",5.8,6.1
+"Day-2 tidal volume, mL",546,588
+"Day-2 plateau pressure, cmH₂O",19.1,19.8
+"ARDS, n (%)",0.5,2.0
+"Sepsis-3, n (%)",58.5,64.9
+"CRRT, n (%)",3.6,5.7
+"Day-2 creatinine, μmol/L",1.4,1.5
+"Day-2 WBC, ×10⁹/L",12.6,12.9
+"Day-2 platelets, ×10⁹/L",176,180
+"Day-2 lactate, mmol/L",1.64,1.84

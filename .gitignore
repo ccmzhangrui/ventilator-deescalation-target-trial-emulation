@@ -1,0 +1,17 @@
+# Row-level artefacts derived from credentialed databases are not redistributed.
+results/*.parquet
+eicu_cache/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Manuscript build outputs (regenerate with build_final.py / build_aic.py)
+*.docx
+*.pptx
+ppt/
+ppt_final/
+ppt_v3/
+
+# Local source data (credentialed; never commit)
+*.xlsx
+*.csv.gz

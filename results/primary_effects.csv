@@ -1,0 +1,2 @@
+mort_early,mort_deferred,rd,rr,rmst_early,rmst_deferred,rmst_diff,vfd_early,vfd_deferred,vfd_diff,rd_ci_lo,rd_ci_hi,rr_ci_lo,rr_ci_hi,rmst_ci_lo,rmst_ci_hi,vfd_ci_lo,vfd_ci_hi
+0.0922,0.1371,-0.045,0.6721,26.96,26.22,0.73,22.93,20.81,2.12,-0.0732,-0.0165,0.5041,0.8645,0.31,1.2,1.45,2.94

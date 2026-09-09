@@ -1,0 +1,122 @@
+{
+  "SA4_extended_covariates": {
+    "n_covariates": 40,
+    "rd": -0.0365,
+    "mort_early": 0.0984,
+    "mort_deferred": 0.135,
+    "rd_ci_lo": -0.0646,
+    "rd_ci_hi": -0.0099,
+    "smd_max": 0.0784,
+    "smd_gt_0_10": 0
+  },
+  "SA5_alt_truncation": {
+    "rd": -0.0462,
+    "rd_ci_lo": -0.0753,
+    "rd_ci_hi": -0.0155
+  },
+  "AIPW_doubly_robust": {
+    "rd": -0.043,
+    "mort_early": 0.0934,
+    "mort_deferred": 0.1363,
+    "rd_ci_lo": -0.0663,
+    "rd_ci_hi": -0.0107
+  },
+  "e_value": {
+    "rr": 0.6721,
+    "e_value_point": 2.34,
+    "rr_ci_bound_nearest_null": 0.8645,
+    "e_value_ci_bound": 1.58
+  },
+  "subgroups": [
+    {
+      "subgroup": "Day-2 mode: controlled",
+      "n": 486,
+      "n_early": 283,
+      "mort_early": 0.1057,
+      "mort_deferred": 0.165,
+      "rd": -0.0594,
+      "rd_ci_lo": -0.1161,
+      "rd_ci_hi": 0.009
+    },
+    {
+      "subgroup": "Day-2 mode: assisted",
+      "n": 1416,
+      "n_early": 493,
+      "mort_early": 0.0901,
+      "mort_deferred": 0.1343,
+      "rd": -0.0442,
+      "rd_ci_lo": -0.0768,
+      "rd_ci_hi": -0.0116
+    },
+    {
+      "subgroup": "Age >= 65",
+      "n": 1149,
+      "n_early": 486,
+      "mort_early": 0.1162,
+      "mort_deferred": 0.1713,
+      "rd": -0.0552,
+      "rd_ci_lo": -0.1008,
+      "rd_ci_hi": -0.0168
+    },
+    {
+      "subgroup": "Age < 65",
+      "n": 753,
+      "n_early": 290,
+      "mort_early": 0.0553,
+      "mort_deferred": 0.0857,
+      "rd": -0.0304,
+      "rd_ci_lo": -0.0655,
+      "rd_ci_hi": 0.0078
+    },
+    {
+      "subgroup": "SOFA >= median",
+      "n": 1185,
+      "n_early": 454,
+      "mort_early": 0.1257,
+      "mort_deferred": 0.172,
+      "rd": -0.0463,
+      "rd_ci_lo": -0.0858,
+      "rd_ci_hi": -0.007
+    },
+    {
+      "subgroup": "SOFA < median",
+      "n": 717,
+      "n_early": 322,
+      "mort_early": 0.0387,
+      "mort_deferred": 0.0783,
+      "rd": -0.0396,
+      "rd_ci_lo": -0.0742,
+      "rd_ci_hi": -0.003
+    },
+    {
+      "subgroup": "Sepsis-3",
+      "n": 1185,
+      "n_early": 454,
+      "mort_early": 0.1257,
+      "mort_deferred": 0.172,
+      "rd": -0.0463,
+      "rd_ci_lo": -0.0858,
+      "rd_ci_hi": -0.007
+    },
+    {
+      "subgroup": "No sepsis",
+      "n": 717,
+      "n_early": 322,
+      "mort_early": 0.0387,
+      "mort_deferred": 0.0783,
+      "rd": -0.0396,
+      "rd_ci_lo": -0.0742,
+      "rd_ci_hi": -0.003
+    },
+    {
+      "subgroup": "No ARDS",
+      "n": 1875,
+      "n_early": 772,
+      "mort_early": 0.0919,
+      "mort_deferred": 0.1363,
+      "rd": -0.0444,
+      "rd_ci_lo": -0.0754,
+      "rd_ci_hi": -0.0165
+    }
+  ]
+}

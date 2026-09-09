@@ -1,0 +1,107 @@
+{
+  "primary_ref": {
+    "rd": -0.045,
+    "rd_ci": [
+      -0.0732,
+      -0.0165
+    ]
+  },
+  "specs": {
+    "M0_reproduce": {
+      "n": 1902,
+      "n_early": 776,
+      "n_deferred": 1126,
+      "rd": -0.0449,
+      "rr": 0.6726,
+      "mort_early": 0.0923,
+      "mort_deferred": 0.1372,
+      "rd_ci_lo": -0.0718,
+      "rd_ci_hi": -0.0163,
+      "rr_ci_lo": 0.5116,
+      "rr_ci_hi": 0.872,
+      "smd_max": 0.0794,
+      "smd_gt_0_10": 0,
+      "n_covariates": 21
+    },
+    "S1_bmi_continuous": {
+      "n": 1902,
+      "n_early": 776,
+      "n_deferred": 1126,
+      "rd": -0.0448,
+      "rr": 0.6731,
+      "mort_early": 0.0924,
+      "mort_deferred": 0.1372,
+      "rd_ci_lo": -0.0724,
+      "rd_ci_hi": -0.0178,
+      "rr_ci_lo": 0.5075,
+      "rr_ci_hi": 0.8622,
+      "smd_max": 0.0789,
+      "smd_gt_0_10": 0,
+      "n_covariates": 21
+    },
+    "S2_bmi_cat_pf_cat": {
+      "n": 1902,
+      "n_early": 776,
+      "n_deferred": 1126,
+      "rd": -0.0407,
+      "rr": 0.701,
+      "mort_early": 0.0955,
+      "mort_deferred": 0.1363,
+      "rd_ci_lo": -0.0654,
+      "rd_ci_hi": -0.0089,
+      "rr_ci_lo": 0.5397,
+      "rr_ci_hi": 0.9308,
+      "smd_max": 0.0786,
+      "smd_gt_0_10": 0,
+      "n_covariates": 29
+    },
+    "S3_bmi_pf_cat_apache": {
+      "n": 1902,
+      "n_early": 776,
+      "n_deferred": 1126,
+      "rd": -0.0406,
+      "rr": 0.7017,
+      "mort_early": 0.0956,
+      "mort_deferred": 0.1362,
+      "rd_ci_lo": -0.0662,
+      "rd_ci_hi": -0.0102,
+      "rr_ci_lo": 0.5402,
+      "rr_ci_hi": 0.916,
+      "smd_max": 0.0718,
+      "smd_gt_0_10": 0,
+      "n_covariates": 30
+    },
+    "S4_bmi_pf_cat_severity": {
+      "n": 1902,
+      "n_early": 776,
+      "n_deferred": 1126,
+      "rd": -0.0409,
+      "rr": 0.6994,
+      "mort_early": 0.0952,
+      "mort_deferred": 0.1361,
+      "rd_ci_lo": -0.0658,
+      "rd_ci_hi": -0.0086,
+      "rr_ci_lo": 0.5421,
+      "rr_ci_hi": 0.9315,
+      "smd_max": 0.0855,
+      "smd_gt_0_10": 0,
+      "n_covariates": 32
+    },
+    "S5_overlap_trim_010_090": {
+      "n": 1893,
+      "n_early": 774,
+      "n_deferred": 1119,
+      "rd": -0.0432,
+      "rr": 0.6819,
+      "mort_early": 0.0927,
+      "mort_deferred": 0.1359,
+      "rd_ci_lo": -0.0723,
+      "rd_ci_hi": -0.016,
+      "rr_ci_lo": 0.5082,
+      "rr_ci_hi": 0.8696,
+      "smd_max": 0.1187,
+      "smd_gt_0_10": 1,
+      "n_covariates": 21
+    }
+  }
+}

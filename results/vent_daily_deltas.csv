@@ -1,0 +1,3 @@
+strategy,FiO2_Day2_median,FiO2_Day3_median,FiO2_delta_D3_minus_D2,PEEP_Day2_median,PEEP_Day3_median,PEEP_delta,PeakP_Day2_median,PeakP_Day3_median,PeakP_delta,Pplat_Day2_median,Pplat_Day3_median,Pplat_delta,TV_Day2_median,TV_Day3_median,TV_delta,n_FiO2_Day2,n_FiO2_Day3,n_Peep_Day2,n_Peep_Day3
+early,40.0,40.0,0.0,5.0,5.0,0.0,20.0,22.0,2.0,19.0,18.0,-1.0,524.0,552.0,28.0,776,376,776,281
+deferred,40.0,40.0,0.0,5.0,5.0,0.0,22.0,19.0,-3.0,19.0,19.0,0.0,546.0,540.0,-6.0,1126,1123,1126,1111
